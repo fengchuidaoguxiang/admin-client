@@ -51,7 +51,6 @@ class LeftNav extends Component {
                 */
                const cItem = item.children.find(cItem => cItem.key === path);
                if(cItem){
-                  debugger
                   this.openKey = item.key;
                }
 
