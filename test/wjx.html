@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        // for(let i = 0; i < 5; i++){
+        //     console.log(i);
+        // }
+        //console.log("循环外：" + i);
+
+        const num = 1;
+        // console.log( num++ );
+
+        function sum(a,b){
+            return a + b;
+        }
+
+        const add = (a,b) => a + b;
+
+        const p = {
+            name: "jack",
+            age: 21,
+            // sayHello: function () {
+            //     console.log("hello");
+            // }
+            // sayHello(){
+            //     console.log("hello method type");
+            // }
+        }
+        // p.sayHello();
+
+        // const hello = function ( person ) {
+        //         console.log(person.name,person.age);
+        // }
+
+        // const hello = function ( {name, age} ) {
+        //         console.log(name, age);
+        // }
+        const hello = ({name, age}) => console.log(name, age);
+    
+
+        hello(p);
+    </script>
+</body>
+</html>

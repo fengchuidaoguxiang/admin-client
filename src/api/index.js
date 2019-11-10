@@ -31,6 +31,16 @@ export const reqWeather = (city) => {
 
 }
 
+// const persons/personList/personArr = [{},{}]
+
+// 获取分类列表
+//export const reqCategorys = () => ajax.get(BASE + '/manage/category/list');
+// export const reqCategorys = () => ajax({
+//     // method: 'GET',
+//     url: BASE + '/manage/category/list' 
+// });
+export const reqCategorys = () => ajax(BASE + '/manage/category/list');
+
 
 //等价于上面的reqLogin方法
 // 请求登录
@@ -68,3 +78,12 @@ export const reqWeather = (city) => {
 //     console.log('请求成功了', result);
 // })
 //将实参数据赋值给形参变量
+
+// 添加分类
+export const reqAddCategory = (categoryName) => ajax.post( BASE + '/manage/category/add' ,{categoryName});
+
+// 修改分类
+export const reqUpdateCategory = ({categoryId, categoryName}) => ajax.post( BASE + '/manage/category/update' ,{
+    categoryId,
+    categoryName
+});
