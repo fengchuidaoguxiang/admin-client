@@ -94,3 +94,20 @@ export const reqProducts = ( pageNum, pageSize ) => ajax( BASE + '/manage/produc
         pageNum,
         pageSize
     }})
+
+// 根据Name/desc搜索产品分页列表
+export const reqSearchProducts = ({
+    pageNum, 
+    pageSize,
+    searchName,
+    searchType // 它的值是'productName' 或者 'productDesc'
+}) => ajax( BASE + '/manage/product/search', {
+    // method: 'GET',
+    params: {
+        pageNum,
+        pageSize,
+        [searchType]: searchName,
+        // productName: searchName,
+        // productDesc: searchName,
+    }
+} )

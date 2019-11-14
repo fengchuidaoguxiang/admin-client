@@ -20,6 +20,8 @@ export default class Product extends Component {
     loading: false,
     products: [ ], // 商品列表
     total: 0, // 商品的总数量
+    searchType: 'productName', // 默认是按商品名称搜索
+    searchName: '', //搜索的关键字
   }
 
   initColumns = () => {
@@ -98,15 +100,15 @@ export default class Product extends Component {
   }
 
   render() {
-    const { loading, products, total } = this.state;
+    const { loading, products, total, searchType, searchName } = this.state;
 
     const title = (
       <span>
-        <Select style={{width: 200}} value="2">
-          <Option value="1">按名称搜索</Option>
-          <Option value="2">按描述搜索</Option>
+        <Select style={{width: 200}} value={searchType} onChange={() => {}}>
+          <Option value="productName">按名称搜索</Option>
+          <Option value="productDesc">按描述搜索</Option>
         </Select>
-        <Input style={{width: 200, margin: '0 10px'}} placeholder="关键字"/>
+        <Input style={{width: 200, margin: '0 10px'}} placeholder="关键字" value={searchName}/>
         <Button type="primary">搜索 </Button>
       </span>
     );
