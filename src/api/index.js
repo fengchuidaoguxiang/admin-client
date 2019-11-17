@@ -93,9 +93,9 @@ export const reqProducts = ( pageNum, pageSize ) => ajax( BASE + '/manage/produc
     params: { // 包含所以query参数的对象
         pageNum,
         pageSize
-    }})
+    }});
 
-// 根据Name/desc搜索产品分页列表
+// 根据Name/desc搜索商品分页列表
 export const reqSearchProducts = ({
     pageNum, 
     pageSize,
@@ -111,3 +111,20 @@ export const reqSearchProducts = ({
         // productDesc: searchName,
     }
 } )
+
+
+//对商品进行上架/下架处理
+//方式一：以函数方式下发POST请求
+export const reqUpdateStatus = ( productId, status ) => ajax(BASE + '/manage/product/updateStatus', {
+    method: 'POST',
+    data: {
+        productId,
+        status
+    }
+});
+//方式二：以对象方式下发POST请求
+/* ajax.post(BASE + '/manage/product/updateStatus', {
+    productId,
+    status
+}); */
+
