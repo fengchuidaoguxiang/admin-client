@@ -13,6 +13,7 @@ import throttle from 'lodash.throttle';
 import LinkButton from '../../components/link-button';
 import { reqProducts, reqSearchProducts, reqUpdateStatus } from '../../api';
 import { PAGE_SIZE } from '../../utils/Constants';
+import memoryUtils from '../../utils/memoryUtils';
 
 const Option = Select.Option;
 /**
@@ -82,7 +83,15 @@ export default class ProductHome extends Component {
         width: 100,
         render: (product) => (
           <span>
-            <LinkButton onClick={() => this.props.history.push('/product/detail')}>详情</LinkButton>
+            <LinkButton 
+                onClick={() => {
+                    // 在内存中保存product
+                    memoryUtils.product = product;
+                    this.props.history.push('/product/detail', product);
+                }}
+            >
+                详情
+            </LinkButton>
             <LinkButton>修改</LinkButton>
           </span>
         )
@@ -150,7 +159,7 @@ export default class ProductHome extends Component {
       </span>
     );
     const extra = (
-      <Button type="primary">
+      <Button type="primary" onClick={ () => this.props.history.push('/product/addupdate') }>
         <Icon type="plus"/>
         添加商品
       </Button>

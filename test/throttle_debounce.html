@@ -22,7 +22,7 @@
 
       3.函数节流(throttle)
         1).理解:
-            在函数需要频繁触发时：函数执行一次后，只有大于设定的执行周期后才会执行第二次
+            在函数需要频繁触发时：函数执行第一次后，只有大于设定的执行周期后才会执行第二次
             适合多次事件按时间做平均分配触发
         2).场景:
             窗口调整(resize)
@@ -47,19 +47,42 @@
         }
 
         //实现函数节流的函数
-        function throttle(fn, delay){
-            let last = 0;
-            return function(){
-                //console.log('throttle 事件...');
-                const now = Date.now();
-                if(now - last > delay){
-                    fn.apply(this, arguments);
-                    last = now;
+        function throttle(callback, delay){
+            let start = 0; // 必须保证第1次点击必然立即调用
+            return function(){ // 它的this是谁，就得让callback()中的this是谁；它接收的所有实参都直接交给callback()
+                console.log('throttle 事件');
+                const current = Date.now();
+                if(current - start > delay){ // 从第2次点击开始，需要间隔时间超过delay
+                    callback.apply(this, arguments); // 真正处理事件的函数
+                    start = current;
                 }
             }
         }
+        // document.getElementById('throttle').onclick = handleClick; //没有节流
+        document.getElementById('throttle').onclick = throttle(handleClick, 3000); //有节流
 
-        document.getElementById('throttle').onclick = throttle(handleClick, 1000);
+        //实现函数防抖的函数
+        function debounce( callback, delay ){
+            return function() {
+                console.log('debounce 事件...');
+                // 保存this和arguments
+                const that = this;
+                const args = arguments;
+                
+                // 清除待执行的定时器任务
+                if(callback.timeoutId){
+                    clearTimeout(callback.timeoutId);
+                }
+                // 每隔delay的时间，启动一个新的延迟定时器，去准备调用callback
+                callback.timeoutId = setTimeout(() => {
+                    callback.apply(that, args);
+                    // 如果定时器回调执行了，删除标记
+                    delete callback.timeoutId;
+                }, delay);
+
+            }
+        }
+        document.getElementById('debounce').onclick = debounce(handleClick, 1000); //有节流
 
     </script>
 </body>

@@ -144,7 +144,7 @@ class LeftNav extends Component {
                 */}
                 <Menu
                     selectedKeys={[selectKey]}
-                    const defaultOpenKeys ={[this.openKey]}
+                    defaultOpenKeys ={[this.openKey]}
                     mode="inline"
                     theme="dark"
                 >
