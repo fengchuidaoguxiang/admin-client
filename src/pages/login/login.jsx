@@ -25,6 +25,7 @@ class Login extends Component {
 
         //对表单所有字段进行统一验证
         this.props.form.validateFields( async (err, {username, password}) => {
+            //检验通过
             if (!err) {
                 // try{}catch(error){}
                 // alert(`发登陆的ajax请求，username=${username},password=${password}`);
@@ -200,3 +201,12 @@ export default WrapperForm // <Form(Login)/>
   组件：组件类，本质就是一个构造函数。
   组件对象：组件类的实例，也就是构造函数的实例。
   */
+
+  /*
+   async和await
+   1.作用？
+
+   2.哪里写await?
+
+   3.哪里写async?
+   */

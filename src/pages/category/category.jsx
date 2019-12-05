@@ -1,181 +1,319 @@
 import React, { Component } from 'react';
 import {
   Card,
-  Button, 
+  Table,
+  Button,
   Icon,
-  Table, 
-  message, 
+  message,
   Modal
 } from 'antd';
 
-import { reqCategorys, reqAddCategory, reqUpdateCategory } from '../../api';
 import LinkButton from '../../components/link-button';
-import AddUpdateForm from './add-update-form';
-
-
-// const data = [
-//   {
-//     "_id": "1",
-//     "name": "bb",
-//   },
-//   {
-//     "_id": "2",
-//     "name": "cc",
-//   },
-//   {
-//     "_id": "3",
-//     "name": "dd",
-//   },
-// ];
+import {reqCategorys, reqUpdateCategory, reqAddCategory, reqCategory} from '../../api';
+import AddForm from './add-form';
+import UpdateForm from './update-form';
 
 /**
- * 分类管理
+ * 商品分类路由
  */
-export default class Category extends Component {
+export default class Category extends Component{
 
   state = {
-    categorys: [], // 所有分类的数组
-    loading: false, // 是否正在请求加载中
-    isShow: false, 
-    showStatus: 0, // 0: 不显示  1：显示添加  2：显示修改
+    loading: false, // 是否正在获取数据中
+    categorys: [], // 一级分类列表
+    subCategorys: [], // 二级分类列表
+    parentId: '0', // 当前需要显示的分类列表的父分类ID(parentId)
+    parentName: '', // 当前需要显示的分类列表的父分类名称
+    showStatus: 0, // 标识添加/更新的确认框是否显示，0：都不显示，1：显示添加，2：显示更新
   }
 
-  /*
-  初始化table的所有列信息的数组
+  /**
+   * 初始化Table所有列的数组
    */
   initColumns = () => {
-    this.columns = [
+     this.columns = [
       {
         title: '分类名称',
-        dataIndex: 'name',
-        // render: text => <a>{text}</a>,
+        dataIndex: 'name', // 指定数据对应的属性名
       },
       {
         title: '操作',
         width: 300,
-        render: (category) => <LinkButton onClick={() => {
-          this.category = category; // 保存当前分类，其它地方都可以读取到
-          this.setState({ showStatus: 2 });
-        }}>修改分类</LinkButton>
+        render: (category) => (  // 返回需要显示的界面标签
+          <span>
+            <LinkButton onClick={() => this.showUpdate(category)}>修改分类</LinkButton>
+            {/*如何向事件回调函数传递参数：先定义一个匿名箭头函数，然后在匿名箭头函数中调用处理事件的函数并传入数据 */}
+            {this.state.parentId==='0' ? <LinkButton onClick={ () => {this.showSubCategorys(category)} }>查看子分类</LinkButton> : null}
+            
+          </span>
+        )        
       },
     ];
   };
 
-  /*
-  异步获取分类列表显示
+  /**
+   * 异步获取一级/二级分类列表显示
+   * parentId: 如果没有指定，根据状态中的parentId请求；如果指定了，就根据指定的发请求
    */
-  getCategorys = async () => {
-    // 显示loading
-    this.setState({ loading: true });
-    // 发异步ajax请求
-    const result = await reqCategorys();
-    // 隐藏loading
-    this.setState({ loading: false });
-    if( result.status === 0 ){ // 成功
-      // 取出分类列表
-      const categorys = result.data;
-      // 更新状态categorys数据
-      this.setState({
-        categorys
-      });
-    } else{
-      message.error('获取分类列表失败了');
+  getCategorys = async (parentId) => {
+
+    // 在发请求前，显示loading
+    this.setState({loading: true});
+    // const {parentId} = this.state;
+    parentId = parentId || this.state.parentId;
+    // 发异步ajax请求，获取结果数据
+    const result = await reqCategorys(parentId);
+    // 在请求完成后，隐藏loading
+    this.setState({loading: false});
+
+    if(result.status === 0){
+      // 取出分类数组(可能是一级也可能是二级)
+      const categorys = result.data; 
+      if(parentId === '0'){
+         // 更新一级分类状态
+         this.setState({
+           categorys  // 【categorys: categorys】的简写
+         });
+      } else {
+        // 更新二级分类状态
+        this.setState({
+          subCategorys: categorys
+        });
+      }
+    }else{
+      message.error('获取分类列表失败！');
     }
   };
 
   /**
-   * 点击确定的回调：添加/修改分类
+   * 显示指定一级分类对象的二级列表
    */
-  handleOk = (categoryName) => {
+  showSubCategorys = (category) => {
+      // 更新状态
+      this.setState({
+        parentId: category._id,
+        parentName: category.name,
+      }, () => { // 在状态更新且重新render()后执行
+        console.log('parentId',this.state.parentId); // '0'
+        // 获取二级分类列表显示
+        this.getCategorys();
+      });
+      // setSate()不能立即获取最新的状态：因为setState()是异步更新状态的
+      // console.log('parentId',this.state.parentId); // '0'
+  };
 
-    // 进行表单验证
-    this.form.validateFields(async (err, values) => {
-      if (!err) {
-        // 验证通过后，得到输入数据
-        const {categoryName} = values;
-        let result;
-        const {showStatus} = this.state;
-        if( showStatus === 1 ){ // 添加
-          // 发添加分类的请求
-          result = await reqAddCategory(categoryName);  
-        } else { // 修改
-          const categoryId = this.category._id;
-          result = await reqUpdateCategory({categoryId, categoryName});
-        }
-        this.form.resetFields(); // 重置输入数据（变成了初始值）
-        this.setState({ showStatus: 0 });
-
-        const action = showStatus === 1 ? '添加' : '修改';
-        // 根据响应结果，做不同处理
-        if(result.status === 0){
-          // 重新获取分类列表显示
-          this.getCategorys();
-          message.success( action + '分类成功');
-        }else{
-          message.error( action + '分类失败');
-        }
-      }
+  /**
+   * 显示一级分类列表
+   */
+  showCategorys = () => {
+    // 更新为显示一级列表的状态
+    this.setState({
+      parentId: '0',
+      parentName: '',
+      subCategorys: []
     });
   }
 
   /**
-   * 点击取消的回调
+   * 响应点击取消：隐藏确定框
    */
   handleCancel = () => {
-    this.form.resetFields(); // 重置输入数据（变成了初始值）
+    // 清除输入数据
+    this.form.resetFields();
+    // 隐藏确认框
     this.setState({
       showStatus: 0
     });
+  };
+
+  /**
+   * 显示添加的确认框
+   */
+  showAdd = () => {
+    this.setState({
+      showStatus: 1
+    });
   }
 
+
+  /**
+   * 添加分类
+   */
+  addCategory = () => {
+    this.form.validateFields(async (err, values) => {
+      console.log('addCategory');
+      if(!err){
+          // 隐藏确认框
+          this.setState({
+            showStatus: 0
+          })
+    
+          // 收集数据，并提交添加分类的请求
+          // const {parentId, categoryName} = this.form.getFieldsValue();
+          const {parentId, categoryName} = values;
+
+          // 清除输入数据
+          this.form.resetFields();
+          const result = await reqAddCategory(categoryName, parentId);
+          if(result.status === 0){
+    
+            //添加的分类就是当前分类列表下的分类
+            if(parentId === this.state.parentId){
+              // 重新获取当前分类列表显示
+              this.getCategorys();
+            } else if(parentId === '0'){ // 在二级分类列表下添加一级分类，重新获取一级分类列表，但是不需要显示一级列表
+              this.getCategorys('0');
+            
+            }
+          }
+      }
+
+    })
+  };
+
+  /**
+   *  显示修改的确认框
+   */
+  showUpdate = (category) => {
+    // 保存分类对象
+    this.category = category;
+    // 更新状态
+    this.setState({
+      showStatus: 2
+    });
+  };
+
+   /**
+    * 更新分类
+    */
+   updateCategory = () => {
+    console.log('updateCategory');
+    // 进行表单验证，只有通过了才处理
+    this.form.validateFields( async (err, values) => {
+      if(!err){
+        // 1. 隐藏确认框
+        this.setState({
+          showStatus: 0
+        });
+
+        // 准备数据
+        const categoryId = this.category._id;
+        // const categoryName = this.form.getFieldValue('categoryName');
+        const {categoryName} = values;
+        // 清除输入数据
+        this.form.resetFields();
+
+        // 2. 发请求更新分类
+        const result = await reqUpdateCategory({categoryId, categoryName});
+        if( result.status === 0 ){
+          // 3. 重新显示列表
+          this.getCategorys();
+        }
+      }
+    });
+   }
+
+
+  /**
+   * 为第一次render()准备数据
+   */
   componentWillMount(){
-    this.initColumns(); 
+    this.initColumns();
   }
 
+  /**
+   * 执行异步任务：发异步ajax请求
+   */
   componentDidMount(){
+    // 获取一级分类列表显示
     this.getCategorys();
   }
 
-  render() {
+  render(){
 
-    // 取出状态数据
-    const { categorys,loading, showStatus } = this.state;
- 
-    //读取更新的分类名称
-    const category = this.category || {};
+    // 读取状态数据
+    const {categorys, subCategorys, parentId, parentName ,loading, showStatus} = this.state;
+    // 读取指定的分类
+    const category = this.category || {}; // 如果还没有指定一个空对象
 
 
-    // Card右上角的结构
+    // Card的左侧标题
+    const title = parentId === '0' ? '一级分类列表' : (
+      <span>
+        <LinkButton onClick={this.showCategorys}>一级分类列表</LinkButton>
+        <Icon type='arrow-right' style={{marginRight: 5}}/>
+        <span>{parentName}</span>
+      </span>
+    );
+    // Card的右侧标题
     const extra = (
-      <Button type="primary" onClick={() => {
-         this.category = {};
-         this.setState({showStatus: 1}) 
-        }}>
-        <Icon type="plus"/>
+      <Button type='primary' onClick={this.showAdd}>
+        <Icon type='plus'/>
         添加
       </Button>
     );
+
     return (
-      <Card extra={extra} >
-        <Table
-          bordered={true}//如果属性值是true,可以把等号和true省略，只写属性名。bordered
-          rowKey="_id"
-          loading = {loading}
+      <Card title={title} extra={extra}>
+        <Table 
+          bordered={true} // bordered={true} 可简写为 bordered
+          rowKey='_id'
+          loading={loading}
+          dataSource={ parentId === '0' ? categorys : subCategorys } 
           columns={this.columns} 
-          dataSource={categorys}
-          pagination={{defaultPageSize: 6, showQuickJumper: true}} //外层花括号表示里面是js代码，里面花括号表示是一个对象
+          pagination={{defaultPageSize: 5, showQuickJumper: true}}
         />
 
-        <Modal
-          title={showStatus === 1 ? "添加分类" : "修改分类"}
-          visible={showStatus !== 0}
-          onOk={this.handleOk}
+      <Modal
+          title="添加分类"
+          visible={showStatus===1}
+          onOk={this.addCategory}
           onCancel={this.handleCancel}
         >
-          {/* 将子组件传递过来的form对象保存到当前组件对象上 */}
-          <AddUpdateForm setForm={form => this.form = form} categoryName={category.name}/>
-        </Modal>
+            <AddForm 
+               categorys={ categorys } 
+               parentId={ parentId }
+               setForm={(form) => {this.form = form}}
+            />
+        </Modal> 
+
+        <Modal
+          title="更新分类"
+          visible={showStatus===2}
+          onOk={this.updateCategory}
+          onCancel={this.handleCancel}
+        >
+            <UpdateForm 
+               categoryName={category.name} 
+               setForm={(form) => {this.form = form}}
+            />
+        </Modal> 
+
     </Card>
-    )
+    );
+
+    // const dataSource = [
+    //   {
+    //     "parentId": "0",
+    //     "_id": "5dd9c1e52263c475e7d02960",
+    //     "name": "家电"
+    //   },
+    //   {
+    //     "parentId": "0",
+    //     "_id": "5dd9c1e82263c475e7d02961",
+    //     "name": "手机"
+    //   },
+    //   {
+    //     "parentId": "0",
+    //     "_id": "5dd9c1ed2263c475e7d02962",
+    //     "name": "手机"
+    //   },
+    //   {
+    //     "parentId": "0",
+    //     "_id": "5dd9c1ef2263c475e7d02963",
+    //     "name": "日用品"
+    //   }
+    // ];
+   
   }
 }
