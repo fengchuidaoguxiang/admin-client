@@ -138,6 +138,32 @@ export const reqSearchProducts = ({
     }
 } )
 
+// 删除指定名称的图片
+export const reqDeleteImg = (name) => ajax.post(BASE + '/manage/img/delete', {name});
+
+// 添加或修改商品
+export const reqAddOrUpdateProduct = (product) => ajax.post(BASE + '/manage/product/' + (product._id ? 'update' : 'add'), product);
+
+// 修改商品
+// export const reqUpdateProduct = (product) => ajax.post(BASE + '/manage/product/update', product);
+
+// 获取所有角色的列表
+export const reqRoles = () => ajax.get(BASE + "/manage/role/list");
+
+// 添加角色
+export const reqAddRole = (roleName) => ajax.post(BASE + "/manage/role/add", {roleName});
+
+// 修改角色
+export const reqUpdateRole = (role) => ajax.post(BASE + "/manage/role/update", role);
+
+// 获取所有用户的列表
+export const reqUsers = () => ajax( BASE + '/manage/user/list' );
+
+// 删除指定用户
+export const reqDeleteUser = (userId) => ajax.post( BASE + '/manage/user/delete', {userId});
+
+// 添加/更新用户
+export const reqAddOrUpdateUser = (user) => ajax.post( BASE + '/manage/role/' + (user._id ? 'update' : 'add'), user)
 
 //对商品进行上架/下架处理
 //方式一：以函数方式下发POST请求

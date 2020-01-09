@@ -74,6 +74,7 @@ export default class Category extends Component{
          this.setState({
            categorys  // 【categorys: categorys】的简写
          });
+         console.log('--------',this.state.categorys.length);
       } else {
         // 更新二级分类状态
         this.setState({
@@ -264,7 +265,7 @@ export default class Category extends Component{
           pagination={{defaultPageSize: 5, showQuickJumper: true}}
         />
 
-      <Modal
+        <Modal
           title="添加分类"
           visible={showStatus===1}
           onOk={this.addCategory}
