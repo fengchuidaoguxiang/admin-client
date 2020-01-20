@@ -8,7 +8,7 @@ import jsonp from 'jsonp'; // axios不能发jsonp请求
 import {message} from 'antd';
 
 // const BASE = 'http://localhost:5000';
-const BASE = '';
+const BASE = '/api';
 
 
 // 请求登录

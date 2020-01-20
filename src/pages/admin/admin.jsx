@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { Redirect, Switch, Route } from 'react-router-dom';
 import { Layout } from 'antd';
+import { connect } from 'react-redux';
 
-import memoryUtils from '../../utils/memoryUtils';
+// import memoryUtils from '../../utils/memoryUtils';
 import LeftNav from '../../components/lef-nav';
 import Header from '../../components/header';
 
@@ -14,17 +15,19 @@ import User from '../user/user';
 import Bar from '../charts/bar';
 import Line from '../charts/line';
 import Pie from '../charts/pie';
+import NotFound from '../not-found/not-found';
 
 const { Footer, Sider, Content } = Layout;
 
 
-export default class Admin extends Component {
+class Admin extends Component {
     render() {
 
         // 读取保存的user，如果不存在，直接跳转到登陆界面
         // const user = JSON.parse(localStorage.getItem('user_key') || '{}');
         // const user = storageUtils.getUser();
-        const user = memoryUtils.user;
+        // const user = memoryUtils.user;
+        const user = this.props.user;
         if(!user._id){
             // this.props.history.replace('/login'); //此句一般用于事件回调函数中进行路由跳转
             return <Redirect to="/login"/> // 自动跳转到指定的路由路径
@@ -43,6 +46,7 @@ export default class Admin extends Component {
                <Header />
                <Content style={{background: 'white', margin: '20px' }}>
                     <Switch>
+                        <Redirect exact from='/' to="/home"/>
                         <Route path="/home" component={Home}/>
                         <Route path='/category' component={Category}/>
                         <Route path='/product' component={Product}/>
@@ -51,7 +55,7 @@ export default class Admin extends Component {
                         <Route path='/charts/bar' component={Bar}/>
                         <Route path='/charts/line' component={Line}/>
                         <Route path='/charts/pie' component={Pie}/>
-                        <Redirect to="/home"/>
+                        <Route component={NotFound}/> {/*上面没有一个匹配，直接显示*/}
                     </Switch>
                 </Content>
                <Footer style={{textAlign: 'center', color: 'rgba(0, 0, 0, 0.5)'}}>
@@ -62,3 +66,8 @@ export default class Admin extends Component {
         )
     }
 }
+
+export default connect(
+    state => ({user: state.user}),
+    {}
+)(Admin)
